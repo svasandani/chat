@@ -1,0 +1,30 @@
+{
+  "name": "chat",
+  "version": "1.0.0",
+  "description": "A simple node.js + vanilla JS chat application with support for multiple rooms.",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon ./index.js --exec babel-node -e js",
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/svasandani/chat.git"
+  },
+  "keywords": [
+    "websocket",
+    "chat",
+    "rooms"
+  ],
+  "author": "Shailesh Vasandani",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/svasandani/chat/issues"
+  },
+  "homepage": "https://github.com/svasandani/chat#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "nodemon": "^2.0.6",
+    "socket.io": "^3.0.4"
+  }
+}
