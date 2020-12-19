@@ -3,9 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Chat</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        a:visited {
+            color: black;
+        }
+
+        a.msg.current {
+            border-width: 2px;
+            background: #efefef;
+            font-weight: bold;
+        }
+
+        #chatsection {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            max-height: 100vh;
+            display: grid;
+            grid-template-rows: 1fr 75px;
+        }
+
+        #chatbar {
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            grid-template-rows: 1fr;
+            grid-gap: 25px;
+            padding: 25px;
+            max-height: calc(100vh - 125px);
+        }
+
+        @media (max-width: 1000px) {
+            #chatbar {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 2fr;
+            }
+        }
+
+        #sidebar {
+            padding: 25px;
+            border: 1px solid grey;
+        }
+
+        h1 {
+            margin-bottom: 50px;
+        }
+
+        #chat {
+            padding: 25px;
+            border: 1px solid grey;
+            overflow: scroll;
+            max-height: 100%;
+        }
+
+        .msg {
+            padding: 15px;
+            margin-bottom: 24px;
+            border: 1px solid grey;
+        }
+
+        #input {
+            margin: 25px;
+            margin-top: 0;
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            grid-gap: 25px;
+        }
+
+        #input input {
+            padding: 12px;
+        }
+    </style>
 </head>
 <body>
-    
+    <div id="chatsection">
+        <div id="chatbar">
+            <div id="sidebar">
+                <h1>Rooms</h1>
+                <a class="msg" data-room="a" href="/a">a</a>
+                <a class="msg" data-room="b" href="/b">b</a>
+                <a class="msg" data-room="c" href="/c">c</a>
+            </div>
+            <div id="chat">
+                <div class="msg"><strong>Welcome to Chilli's</strong></div>
+            </div>
+        </div>
+        <div id="input">
+            <input id="message" autocomplete="off" type="text" placeholder="Message..." aria-label="Message...">
+            <button id="send" type="submit">Send</button>
+        </div>
+    </div>
 </body>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const buildMsg = (text) => {
+        let div = document.createElement('div');
+        div.classList.add('msg');
+        div.appendChild(document.createTextNode(text));
+
+        return div;
+    }
+
+    const appendMessage = (chatbox, data) => {
+        if (!data.value) return;
+
+        let text = data.value;
+
+        chatbox.appendChild(buildMsg(text));
+    }
+
+    let room = window.location.pathname.split('/')[1];
+    let input = document.querySelector('#message');
+    let sendBtn = document.querySelector('#send');
+    let chatbox = document.querySelector('#chat');
+
+    if (!room || room.length < 1) {
+        appendMessage(chatbox, { value: 'Please choose a chat room from the options on the left' });
+        input.setAttribute('disabled', 'true');
+        sendBtn.setAttribute('disabled', 'true');
+    } else {
+        document.title = `Room ${room} — Chat`;
+
+
+        let rooms = Array.from(document.querySelectorAll('#sidebar a'));
+        rooms.forEach((r) => {
+            if (r.dataset.room === room) r.classList.add('current');
+        })
+
+
+        const socket = io('/general');
+
+        socket.on('connect', () => {
+            socket.emit('join', { room });
+        });
+
+        sendBtn.addEventListener('click', () => {
+            let value = input.value;
+
+            socket.emit('message', { value, room }); 
+
+            input.value = '';
+        });
+
+        socket.on('message', (data) => {
+            appendMessage(chatbox, data);
+        });
+    }
+</script>
 </html>
